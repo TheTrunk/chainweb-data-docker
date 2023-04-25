@@ -2,7 +2,7 @@ ARG UBUNTUVER=22.04
 FROM ubuntu:${UBUNTUVER}
 
 RUN apt-get update -y && apt-get upgrade -y \
- && DEBIAN_FRONTEND=noninteractive apt-get install -y wget curl unzip dirmngr gnupg git cron lsof jq supervisor lsb-release build-essential gmp-dev libgmp10 libgmp-dev liblzma-dev libpq-dev libz-dev libtinfo-dev\
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y wget curl unzip dirmngr gnupg git cron lsof jq supervisor lsb-release build-essential \
  && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/postgresql-archive-keyring.gpg] http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" | tee /etc/apt/sources.list.d/pgdg.list \
  && mkdir -p /usr/share/keyrings \
  && mkdir -p /.gnupg \
@@ -51,7 +51,7 @@ COPY postgresql.conf /etc/postgresql/${PG_VERSION}/main/postgresql.conf
 
 VOLUME /var/lib/postgresql/data
 
-RUN chmod 755 /chainweb-data
+RUN chmod 755 /usr/local/bin/chainweb-data
 RUN chmod 755 /chainweb-data.sh
 RUN chmod 755 /backfill.sh
 RUN chmod 755 /gaps.sh
