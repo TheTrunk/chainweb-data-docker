@@ -2,7 +2,7 @@ ARG UBUNTUVER=22.04
 FROM ubuntu:${UBUNTUVER}
 
 RUN apt-get update -y && apt-get upgrade -y \
- && DEBIAN_FRONTEND=noninteractive apt-get install -y wget curl unzip dirmngr gnupg git cron lsof jq supervisor lsb-release \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y wget curl unzip dirmngr gnupg git cron lsof jq supervisor lsb-release build-essential gmp-dev libgmp10 libgmp-dev liblzma-dev libpq-dev libz-dev libtinfo-dev\
  && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/postgresql-archive-keyring.gpg] http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" | tee /etc/apt/sources.list.d/pgdg.list \
  && mkdir -p /usr/share/keyrings \
  && mkdir -p /.gnupg \
@@ -33,18 +33,12 @@ RUN apt-get update -y \
     && rm -rf /var/lib/apt/lists/*
  
 WORKDIR "/usr/local/bin"
-
-RUN PACKAGE=$(curl --silent "https://api.github.com/repos/kadena-io/chainweb-data/releases/latest" | jq -r .assets[].browser_download_url | grep ${UBUNTUVER} ) \
-    && echo "Downloading file: ${PACKAGE}" \
-    && wget "${PACKAGE}" \
-    && unzip * \
-    && rm -rf *.zip \
-    && chmod +x chainweb-data
  
 RUN rm /etc/postgresql/${PG_VERSION}/main/pg_hba.conf
 RUN rm /etc/postgresql/${PG_VERSION}/main/postgresql.conf
 RUN mkdir -p /var/log/supervisor
 
+COPY chainweb-data /usr/local/bin/chainweb-data
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 COPY chainweb-data.sh /chainweb-data.sh
 COPY postgres_init.sh /postgres_init.sh
@@ -57,6 +51,7 @@ COPY postgresql.conf /etc/postgresql/${PG_VERSION}/main/postgresql.conf
 
 VOLUME /var/lib/postgresql/data
 
+RUN chmod 755 /chainweb-data
 RUN chmod 755 /chainweb-data.sh
 RUN chmod 755 /backfill.sh
 RUN chmod 755 /gaps.sh
